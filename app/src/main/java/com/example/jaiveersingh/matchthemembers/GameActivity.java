@@ -2,9 +2,11 @@ package com.example.jaiveersingh.matchthemembers;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.CountDownTimer;
 import android.provider.ContactsContract;
 import android.support.v4.content.res.TypedArrayUtils;
@@ -38,6 +40,8 @@ public class GameActivity extends AppCompatActivity {
 
     TextView scoreText;
     int currScore = 0;
+    TextView streakText;
+    int currStreak = 0;
 
     TextView timerText;
 
@@ -54,6 +58,8 @@ public class GameActivity extends AppCompatActivity {
 
     CountDownTimer timer;
 
+    ColorStateList defaultColor;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +70,9 @@ public class GameActivity extends AppCompatActivity {
 
         scoreText = findViewById(R.id.scoreText);
         scoreText.setText(String.format(Locale.US, "Score: %d", currScore));
+
+        streakText = findViewById(R.id.streakText);
+        streakText.setText(String.format(Locale.US, "Streak: %d", currStreak));
 
         timerText = findViewById(R.id.timerText);
 
@@ -81,6 +90,8 @@ public class GameActivity extends AppCompatActivity {
 
         random = new Random();
 
+        defaultColor = streakText.getTextColors();
+
         profileImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -94,12 +105,14 @@ public class GameActivity extends AppCompatActivity {
         endBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                timer.cancel();
                 AlertDialog alertDialog = new AlertDialog.Builder(GameActivity.this).create();
                 alertDialog.setTitle("Exit Game");
                 alertDialog.setMessage("Are you sure you want to exit the game?");
                 alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
+                                nextQuestion();
                                 dialog.dismiss();
                             }
                         });
@@ -120,6 +133,7 @@ public class GameActivity extends AppCompatActivity {
             }
 
             public void onFinish() {
+                updateStreak(0);
                 nextQuestion();
             }
         };
@@ -148,7 +162,7 @@ public class GameActivity extends AppCompatActivity {
             btn.update();
         }
         String fileName = memberNames.get(chosenFourIndices.get(correctIndex)).toLowerCase().replaceAll("\\s","");
-        Log.d("BOBOB", fileName);
+
         profileImg.setImageBitmap(
                 decodeSampledBitmapFromResource(
                         getResources(),
@@ -166,9 +180,11 @@ public class GameActivity extends AppCompatActivity {
         {
             currScore++;
             scoreText.setText(String.format(Locale.US, "Score: %d", currScore));
+            updateStreak(1);
         }
         else {
             Toast.makeText(this, "Wrong answer!", Toast.LENGTH_SHORT).show();
+            updateStreak(0);
         }
         nextQuestion();
     }
@@ -233,5 +249,31 @@ public class GameActivity extends AppCompatActivity {
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
         return BitmapFactory.decodeResource(res, resId, options);
+    }
+
+    private void updateStreak(int input)
+    {
+        if(input == 0)
+        {
+            currStreak = 0;
+        }
+        else
+        {
+            currStreak++;
+            if(currStreak == 5)
+            {
+                Toast.makeText(this, "On fire!", Toast.LENGTH_SHORT).show();
+            }
+        }
+        if(currStreak >=5)
+        {
+            streakText.setTextColor(Color.RED);
+        }
+        else
+        {
+            streakText.setTextColor(defaultColor);
+        }
+        streakText.setText(String.format(Locale.US, "Streak: %d", currStreak));
+
     }
 }
