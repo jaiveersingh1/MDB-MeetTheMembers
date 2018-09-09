@@ -60,6 +60,8 @@ public class GameActivity extends AppCompatActivity {
 
     ColorStateList defaultColor;
 
+    final int REQUEST_CODE = 127;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,10 +97,11 @@ public class GameActivity extends AppCompatActivity {
         profileImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                timer.cancel();
                 Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
                 intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
                 intent.putExtra(ContactsContract.Intents.Insert.NAME, memberNames.get(chosenFourIndices.get(correctIndex)));
-                startActivity(intent);
+                startActivityForResult(intent, REQUEST_CODE);
             }
         });
 
@@ -275,5 +278,15 @@ public class GameActivity extends AppCompatActivity {
         }
         streakText.setText(String.format(Locale.US, "Streak: %d", currStreak));
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case REQUEST_CODE:
+                //you just got back from activity C - deal with resultCode
+                nextQuestion();
+                break;
+        }
     }
 }
